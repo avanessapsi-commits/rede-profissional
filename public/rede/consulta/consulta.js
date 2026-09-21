@@ -15,10 +15,6 @@
     var v = document.getElementById(id).value.trim();
     return v === "" ? null : v;
   }
-  function marcado(nome) {
-    var el = form.querySelector('input[name="' + nome + '"]:checked');
-    return el ? el.value : null;
-  }
   function mostrarErro(msg) {
     erro.textContent = msg;
     erro.hidden = false;
@@ -32,33 +28,12 @@
     // Robô preencheu a isca: finge que deu certo e não grava.
     if (valor("site")) { form.hidden = true; obrigado.hidden = false; return; }
 
-    var dados = {
-      nome: valor("nome"),
-      area: valor("area"),
-      email: valor("email"),
-      toparia: marcado("toparia"),
-      criterio_justo: marcado("criterio_justo"),
-      criterio_comentario: valor("criterio_comentario"),
-      expectativas: Array.prototype.map.call(
-        form.querySelectorAll('input[name="expectativas"]:checked'),
-        function (el) { return el.value; }
-      ),
-      perfil_diretorio: valor("perfil_diretorio"),
-      comentario: valor("comentario"),
-    };
+    var dados = { comentario: valor("comentario"), nome: valor("nome") };
 
-    var faltando = [];
-    if (!dados.nome) faltando.push(["nome", "seu nome"]);
-    if (!dados.area) faltando.push(["area", "sua área de atuação"]);
-    if (!dados.toparia) faltando.push(["f-toparia", "se você toparia fazer parte"]);
-    if (!dados.criterio_justo) faltando.push(["f-criterio", "o que achou dos critérios"]);
-    if (faltando.length) {
-      faltando.forEach(function (f) {
-        var el = document.getElementById(f[0]);
-        (el.tagName === "FIELDSET" ? el : el.parentElement).classList.add("falta");
-      });
-      mostrarErro("Falta responder: " + faltando.map(function (f) { return f[1]; }).join(", ") + ".");
-      document.getElementById(faltando[0][0]).scrollIntoView({ block: "center" });
+    if (!dados.comentario) {
+      document.getElementById("f-sugestao").classList.add("falta");
+      mostrarErro("Escreva sua sugestão antes de enviar.");
+      document.getElementById("comentario").focus();
       return;
     }
 
@@ -84,7 +59,7 @@
       .catch(function () {
         mostrarErro("Não conseguimos enviar agora. Confira sua internet e tente de novo. Se continuar, escreva para avanessapsi@gmail.com.");
         botao.disabled = false;
-        botao.textContent = "Enviar respostas";
+        botao.textContent = "Enviar sugestão";
       });
   });
 })();

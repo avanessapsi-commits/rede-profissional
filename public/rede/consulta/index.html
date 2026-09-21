@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex">
 <meta name="description" content="Consulta com a comunidade sobre como a Rede de Profissionais vai funcionar.">
 <meta property="og:title" content="Consulta da Rede de Profissionais">
-<meta property="og:description" content="Poucas perguntas para decidir, junto com a comunidade, como a rede vai funcionar.">
+<meta property="og:description" content="Conheça a proposta da rede e deixe sua sugestão.">
 <meta property="og:image" content="/img/oliveira.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +27,7 @@
     <section class="consulta-topo">
       <p class="rotulo">Consulta com a comunidade</p>
       <h1>Como a rede deve funcionar?</h1>
-      <p class="intro">A Rede de Profissionais está sendo desenhada junto com quem vai fazer parte dela. Abaixo está a proposta como ela está hoje. Leia com calma e conte o que faz sentido, o que mudaria e o que está faltando.</p>
+      <p class="intro">A Rede de Profissionais está sendo desenhada junto com quem vai fazer parte dela. Abaixo está a proposta como ela está hoje. Leia com calma e, se tiver alguma sugestão, escreva logo abaixo.</p>
 
       <div class="proposta">
         <div>
@@ -58,52 +58,14 @@
     </section>
 
     <form id="consulta" novalidate>
-      <div class="campo-dupla">
-        <label>Seu nome
-          <input type="text" id="nome" name="nome" maxlength="160" autocomplete="name" required>
-        </label>
-        <label>Sua área de atuação
-          <input type="text" id="area" name="area" maxlength="160" placeholder="Ex.: psicologia, nutrição, doula" required>
-        </label>
-      </div>
-
-      <label style="display:grid;gap:8px;font-size:14px">
-        <span>E-mail <span class="opcional">(opcional, só se quiser ser avisada quando os cadastros abrirem)</span></span>
-        <input type="email" id="email" name="email" maxlength="200" autocomplete="email">
+      <label style="display:grid;gap:8px" id="f-sugestao">
+        <span class="pergunta">Tem alguma sugestão pra rede?</span>
+        <textarea id="comentario" name="comentario" maxlength="3000" placeholder="O que faz sentido, o que você mudaria, o que está faltando" required></textarea>
       </label>
 
-      <fieldset id="f-toparia">
-        <legend>Você toparia fazer parte da rede?</legend>
-        <label class="escolha"><input type="radio" name="toparia" value="sim"> Sim</label>
-        <label class="escolha"><input type="radio" name="toparia" value="talvez"> Talvez, quero entender melhor</label>
-        <label class="escolha"><input type="radio" name="toparia" value="ainda_nao"> Ainda não</label>
-      </fieldset>
-
-      <fieldset id="f-criterio">
-        <legend>Os critérios de participação parecem justos?</legend>
-        <p class="ajuda">Estar na comunidade e ter registro ativo no conselho da profissão, quando houver.</p>
-        <label class="escolha"><input type="radio" name="criterio_justo" value="sim"> Sim</label>
-        <label class="escolha"><input type="radio" name="criterio_justo" value="nao"> Não</label>
-        <label class="escolha"><input type="radio" name="criterio_justo" value="sugestao"> Tenho uma sugestão</label>
-        <textarea id="criterio_comentario" name="criterio_comentario" maxlength="3000" placeholder="Se quiser, explique ou sugira outro critério" aria-label="Comentário sobre os critérios"></textarea>
-      </fieldset>
-
-      <fieldset>
-        <legend>O que você mais espera da rede? <span class="opcional">(pode marcar mais de um)</span></legend>
-        <label class="escolha"><input type="checkbox" name="expectativas" value="encaminhamentos"> Receber e fazer encaminhamentos</label>
-        <label class="escolha"><input type="checkbox" name="expectativas" value="troca"> Trocar com outras áreas sobre os casos</label>
-        <label class="escolha"><input type="checkbox" name="expectativas" value="visibilidade"> Visibilidade nos espaços da Estrutura da Escuta</label>
-        <label class="escolha"><input type="checkbox" name="expectativas" value="diretorio"> Aparecer no diretório para as famílias</label>
-      </fieldset>
-
-      <label style="display:grid;gap:8px">
-        <span class="pergunta">No diretório, o que é importante aparecer sobre você? <span class="opcional">(opcional)</span></span>
-        <textarea id="perfil_diretorio" name="perfil_diretorio" maxlength="3000" placeholder="Ex.: cidade, se atende online, faixa de valor, abordagem"></textarea>
-      </label>
-
-      <label style="display:grid;gap:8px">
-        <span class="pergunta">Quer comentar mais alguma coisa? <span class="opcional">(opcional)</span></span>
-        <textarea id="comentario" name="comentario" maxlength="3000"></textarea>
+      <label style="display:grid;gap:8px;font-size:14px;max-width:24rem">
+        <span>Seu nome <span class="opcional">(opcional)</span></span>
+        <input type="text" id="nome" name="nome" maxlength="160" autocomplete="name">
       </label>
 
       <!-- Isca pra robô: gente não vê nem preenche. -->
@@ -112,14 +74,14 @@
       </div>
 
       <p class="aviso-erro" id="erro" role="alert" hidden></p>
-      <button class="enviar" type="submit" id="enviar">Enviar respostas</button>
-      <p class="ajuda" style="margin-top:0">Suas respostas ficam guardadas só com a Vanessa e servem apenas para organizar a rede. Para pedir que sejam apagadas, escreva para <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a>.</p>
+      <button class="enviar" type="submit" id="enviar">Enviar sugestão</button>
+      <p class="ajuda" style="margin-top:0">Sua sugestão fica guardada só com a Vanessa e serve apenas para organizar a rede. Para pedir que seja apagada, escreva para <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a>.</p>
     </form>
 
     <section class="obrigado" id="obrigado" hidden tabindex="-1">
       <p class="rotulo">Recebido</p>
-      <h2>Obrigada por ajudar a desenhar a rede.</h2>
-      <p class="suave">Suas respostas chegaram. Quando os cadastros abrirem, a comunidade fica sabendo primeiro.</p>
+      <h2>Obrigada pela sugestão.</h2>
+      <p class="suave">Ela chegou e vai ser lida com atenção. Quando os cadastros abrirem, a comunidade fica sabendo primeiro.</p>
     </section>
   </div>
 </main>
