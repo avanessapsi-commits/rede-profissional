@@ -7,41 +7,72 @@
 <meta name="description" content="Livros da área perinatal e parental em promoção.">
 <meta property="og:title" content="Livros em promoção">
 <meta property="og:description" content="Livros da área perinatal e parental em promoção.">
-<meta property="og:image" content="/img/oliveira.webp">
+<meta property="og:image" content="/img/estudo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="/estilo.css">
 </head>
 <body>
-<header class="gutter"><div class="miolo portal-topo">
-  <a class="marca" href="/">Estrutura da Escuta</a>
+<header class="portal-topo-faixa gutter"><div class="miolo portal-topo">
+  <a class="marca" href="/"><span class="nome">Estrutura da Escuta</span><span class="sub">área perinatal e parental</span></a>
   <nav aria-label="Seções">
-    <a href="/eventos">Eventos</a>
+    <a href="/eventos">Agenda</a>
     <a href="/livros" aria-current="page">Livros</a>
     <a href="/artigos">Artigos</a>
     <a href="/rede">Rede</a>
-    <a href="/area">Minha área</a>
+    <a class="nav-area" href="/area">Minha área</a>
   </nav>
 </div></header>
 
-<main class="gutter">
-  <div class="miolo">
-    <section class="pagina-topo">
-      <p class="rotulo">Em promoção</p>
-      <h1>Livros</h1>
-      <p>Leituras da área perinatal e parental que estão com preço bom agora. Preço muda rápido, então confira na loja.</p>
-    </section>
-    <section class="secao" style="padding-top:40px">
+<main>
+  <section class="abertura abertura--baixa gutter">
+    <img src="/img/estudo.jpg" alt="Mesa de estudo com livro aberto e xícara" fetchpriority="high">
+    <div class="miolo"><div class="conteudo">
+      <p class="rotulo">Livros em promoção</p>
+      <h1>Leituras com preço <em>bom</em> agora.</h1>
+      <p class="linha">Livros da área perinatal e parental que entraram em promoção. Preço muda rápido, então confira na loja antes de comprar.</p>
+    </div></div>
+  </section>
+  <section class="secao gutter">
+    <div class="miolo">
       <div class="livros" data-lista="livro" data-vazio="Nenhum livro em promoção agora."><p class="carregando">Carregando…</p></div>
-    </section>
-  </div>
+    </div>
+  </section>
 </main>
 
 <footer class="rodape gutter">
   <div class="miolo">
-    <p>Estrutura da Escuta · área perinatal e parental</p>
-    <p>Contato: <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a></p>
+    <div class="colunas">
+      <div>
+        <p class="marca-rodape">Estrutura da Escuta</p>
+        <p>Um lugar para quem cuida do começo da vida. Organizado por Vanessa Ferreira Santos, psicóloga perinatal e psicanalista.</p>
+      </div>
+      <div>
+        <h4>No portal</h4>
+        <ul>
+          <li><a href="/eventos">Agenda</a></li>
+          <li><a href="/livros">Livros em promoção</a></li>
+          <li><a href="/artigos">Artigos</a></li>
+          <li><a href="/rede">Rede de profissionais</a></li>
+          <li><a href="/area">Minha área</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Da mesma casa</h4>
+        <ul>
+          <li><a href="https://avanessapsi.com.br" target="_blank" rel="noopener">Site da Vanessa</a></li>
+          <li><a href="https://avanessapsi.com.br/escuta" target="_blank" rel="noopener">Desafio Estrutura da Escuta</a></li>
+          <li><a href="https://avanessapsi.com.br/mentoria" target="_blank" rel="noopener">Mentoria</a></li>
+          <li><a href="https://arquiteturamaterna.substack.com" target="_blank" rel="noopener">Newsletter Frestas de Si</a></li>
+          <li><a href="https://instagram.com/avanessapsi" target="_blank" rel="noopener">Instagram @avanessapsi</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pe">
+      <span>Vanessa Ferreira Santos · CRP 06/136172</span>
+      <span>Contato: <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a></span>
+    </div>
   </div>
 </footer>
 <script src="/portal.js"></script>

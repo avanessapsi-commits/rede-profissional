@@ -69,6 +69,7 @@
     return linkExterno(i.link, "fresco", [
       el("p", { classe: "etiqueta", texto: NOMES_TIPO[i.tipo] }),
       el("div", null, [el("h3", { texto: i.titulo }), detalhe ? el("p", { classe: "meta", texto: detalhe }) : null]),
+      el("span", { classe: "seta", "aria-hidden": "true", texto: "→" }),
     ], i.tipo === "livro");
   }
 
@@ -100,12 +101,7 @@
       });
   }
 
-  var alvos = Array.prototype.slice.call(document.querySelectorAll("[data-lista]"));
-  Promise.all(alvos.map(preencher)).then(function (totais) {
-    // Home sem nenhum conteúdo publicado ainda: mostra o aviso de "em breve".
-    var aviso = document.getElementById("tudo-vazio");
-    if (aviso && totais.every(function (n) { return n === 0; })) aviso.hidden = false;
-  });
+  Array.prototype.slice.call(document.querySelectorAll("[data-lista]")).forEach(preencher);
 
-  window.Portal = { el: el };
+  window.Portal = { el: el, cartaoEvento: cartaoEvento };
 })();

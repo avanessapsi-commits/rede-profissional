@@ -62,22 +62,32 @@
   // ───── desafio e comunidade ─────
   function desenharArea(a) {
     var primeiro = (a.nome || "").split(" ")[0];
-    $("ola").textContent = primeiro ? "Olá, " + primeiro + "." : "Olá.";
+    var ola = $("ola");
+    ola.textContent = "";
+    ola.appendChild(document.createTextNode("Olá, "));
+    ola.appendChild(el("em", { texto: primeiro || "você" }));
+    ola.appendChild(document.createTextNode("."));
 
     var d = a.desafio;
     $("progresso").textContent = d.concluidos === d.total
       ? "Você concluiu os " + d.total + " dias."
       : d.concluidos + " de " + d.total + " dias concluídos.";
+    $("barra").style.width = Math.round((d.concluidos / d.total) * 100) + "%";
+
     var dias = $("dias");
     dias.textContent = "";
     d.dias.forEach(function (x) {
-      var estado = x.concluido_em ? "Dia " + x.dia : x.liberado ? "Dia " + x.dia : "Dia " + x.dia;
-      var corpo = x.concluido_em
+      var feito = !!x.concluido_em;
+      var classe = "dia-desafio" + (feito ? "" : x.liberado ? " dia-desafio--aberto" : " dia-desafio--fechado");
+      var texto = feito
         ? (x.ideias.length ? el("ul", null, x.ideias.map(function (i) { return el("li", { texto: i }); })) : el("p", { classe: "meta", texto: "Concluído em " + dataCurta(x.concluido_em) }))
         : el("p", { classe: "meta", texto: x.liberado ? "Esperando por você no desafio." : "Ainda não liberado." });
-      dias.appendChild(el("div", { classe: "dia" + (x.concluido_em ? "" : x.liberado ? " dia--aberto" : " dia--fechado") }, [
-        el("p", { classe: "etiqueta", texto: estado }),
-        corpo,
+      dias.appendChild(el("article", { classe: classe }, [
+        el("img", { classe: "foto-dia", src: "/img/desafio/dia-" + x.dia + ".webp", alt: "", loading: "lazy" }),
+        el("div", { classe: "corpo" }, [
+          el("p", { classe: "etiqueta", texto: "Dia " + x.dia + (feito ? " · " + dataCurta(x.concluido_em) : "") }),
+          texto,
+        ]),
       ]));
     });
 
@@ -87,15 +97,23 @@
       acoes.appendChild(el("p", { classe: "vazio", texto: "Nenhum encontro ou aviso agora. Quando tiver, aparece aqui." }));
     }
     a.acoes.forEach(function (i) {
-      var meta = [i.data_evento ? dataEvento(i.data_evento) + (i.hora ? ", " + i.hora : "") : "", i.local].filter(Boolean).join(" · ");
+      if (i.data_evento) {
+        var c = window.Portal.cartaoEvento(i);
+        if (!i.link) { var d2 = el("div", { classe: "evento" }); while (c.firstChild) d2.appendChild(c.firstChild); c = d2; }
+        acoes.appendChild(c);
+        return;
+      }
       var filhos = [
-        el("h3", { texto: i.titulo }),
-        meta ? el("p", { classe: "meta", texto: meta }) : null,
-        i.resumo ? el("p", { classe: "resumo", texto: i.resumo }) : null,
+        el("p", { classe: "evento-data", "aria-hidden": "true" }, [el("span", { classe: "mes", texto: "Aviso" })]),
+        el("div", null, [
+          el("h3", { texto: i.titulo }),
+          i.local ? el("p", { classe: "meta", texto: i.local }) : null,
+          i.resumo ? el("p", { classe: "resumo", texto: i.resumo }) : null,
+        ]),
       ];
       acoes.appendChild(i.link
-        ? el("a", { classe: "artigo", href: i.link, target: "_blank", rel: "noopener" }, filhos)
-        : el("div", { classe: "artigo" }, filhos));
+        ? el("a", { classe: "evento", href: i.link, target: "_blank", rel: "noopener" }, filhos)
+        : el("div", { classe: "evento" }, filhos));
     });
   }
 
@@ -115,7 +133,7 @@
     document.querySelectorAll('input[name="publicos"]').forEach(function (c) { c.checked = (p.publicos || []).indexOf(c.value) >= 0; });
 
     $("perfil-estado").textContent = !r.existe
-      ? "Você ainda não tem perfil na rede. Preencha e salve: ele aparece na busca na hora."
+      ? "Você ainda não tem perfil na rede. Preencha e salve: ele aparece na busca na hora, com o seu contato."
       : r.publicado ? "Seu perfil está na busca. Pode editar quando quiser."
       : "Seu perfil está salvo, mas fora da busca no momento. Se tiver dúvida, fale com a Vanessa.";
     $("c-enviar").textContent = r.existe ? "Salvar alterações" : "Salvar e aparecer na busca";

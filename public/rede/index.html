@@ -7,81 +7,116 @@
 <meta name="description" content="Busque profissionais da área perinatal e parental.">
 <meta property="og:title" content="Rede de Profissionais">
 <meta property="og:description" content="Busque profissionais da área perinatal e parental.">
-<meta property="og:image" content="/img/oliveira.webp">
+<meta property="og:image" content="/img/escritorio.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="/estilo.css">
 </head>
 <body>
-<header class="gutter"><div class="miolo portal-topo">
-  <a class="marca" href="/">Estrutura da Escuta</a>
+<header class="portal-topo-faixa gutter"><div class="miolo portal-topo">
+  <a class="marca" href="/"><span class="nome">Estrutura da Escuta</span><span class="sub">área perinatal e parental</span></a>
   <nav aria-label="Seções">
-    <a href="/eventos">Eventos</a>
+    <a href="/eventos">Agenda</a>
     <a href="/livros">Livros</a>
     <a href="/artigos">Artigos</a>
     <a href="/rede" aria-current="page">Rede</a>
-    <a href="/area">Minha área</a>
+    <a class="nav-area" href="/area">Minha área</a>
   </nav>
 </div></header>
 
 <main>
-  <section class="foto home-abertura gutter">
-    <img src="/img/oliveira.webp" alt="Mesa lateral com oliveira, tigela e livros sob luz natural" fetchpriority="high">
-    <div class="conteudo">
-      <p class="rotulo">Rede de profissionais</p>
-      <h1>Cuidado também se constrói em rede.</h1>
-      <p class="linha" style="margin-bottom:32px">Profissionais que cuidam de mulheres, gestantes, puérperas e famílias, num lugar só.</p>
-      <div class="botoes" style="justify-content:flex-start">
-        <a class="cta" href="#busca">Buscar profissional <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="cta" href="/area">Montar meu perfil <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  <section class="abertura gutter">
+    <img src="/img/escritorio.webp" alt="Escritório com estante de livros e poltrona" fetchpriority="high">
+    <div class="miolo">
+      <div class="conteudo">
+        <p class="rotulo">Rede de profissionais</p>
+        <h1>Cuidado também se constrói em <em>rede</em>.</h1>
+        <p class="linha">Profissionais que acompanham mulheres, gestantes, puérperas e famílias. Busque por área, estado e quem atende.</p>
+        <div class="botoes">
+          <a class="btn claro" href="#busca">Buscar profissional <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn contorno-claro" href="/area">Fez o desafio? Monte seu perfil</a>
+        </div>
       </div>
     </div>
   </section>
 
   <section id="busca" class="secao gutter">
     <div class="miolo">
-      <div class="cabeca-secao"><h2>Buscar profissional</h2></div>
-      <div class="filtros" role="search">
-        <label>Nome ou cidade<input type="text" id="f-texto" autocomplete="off"></label>
-        <label>Área<select id="f-area"><option value="">Todas</option><option>Psicologia</option><option>Psiquiatria</option><option>Obstetrícia</option><option>Pediatria</option><option>Nutrição</option><option>Fisioterapia</option><option>Enfermagem</option><option>Fonoaudiologia</option><option>Consultoria em amamentação</option><option>Doula</option><option>Educação física</option><option>Terapias corporais</option><option>Outras áreas do cuidado</option></select></label>
-        <label>Estado<select id="f-uf"><option value="">Todos</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></label>
-        <label>Atende<select id="f-publico"><option value="">Qualquer público</option><option value="tentantes">Tentantes</option><option value="gestantes">Gestantes</option><option value="puerperas">Puérperas</option><option value="bebes">Bebês e crianças</option><option value="familias">Famílias</option></select></label>
-        <label class="escolha"><input type="checkbox" id="f-online"> Atende online</label>
+      <p class="tag-sala"><span class="num">i.</span><span class="rotulo">Busca</span></p>
+      <div class="cabeca-secao"><h2>Encontre quem <em>atende</em> o que você procura.</h2></div>
+      <div class="busca-cartao">
+        <div class="filtros" role="search">
+          <label>Nome ou cidade<input type="text" id="f-texto" autocomplete="off"></label>
+          <label>Área<select id="f-area"><option value="">Todas</option><option>Psicologia</option><option>Psiquiatria</option><option>Obstetrícia</option><option>Pediatria</option><option>Nutrição</option><option>Fisioterapia</option><option>Enfermagem</option><option>Fonoaudiologia</option><option>Consultoria em amamentação</option><option>Doula</option><option>Educação física</option><option>Terapias corporais</option><option>Outras áreas do cuidado</option></select></label>
+          <label>Estado<select id="f-uf"><option value="">Todos</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></label>
+          <label>Atende<select id="f-publico"><option value="">Qualquer público</option><option value="tentantes">Tentantes</option><option value="gestantes">Gestantes</option><option value="puerperas">Puérperas</option><option value="bebes">Bebês e crianças</option><option value="familias">Famílias</option></select></label>
+          <label class="escolha"><input type="checkbox" id="f-online"> Atende online</label>
+        </div>
       </div>
       <p class="contagem" id="contagem" aria-live="polite"></p>
       <div class="profissionais" id="resultados"><p class="carregando">Carregando…</p></div>
     </div>
   </section>
 
-  <section id="oferece" class="secao secao--bege gutter">
+  <section class="secao faixa-vinho gutter">
     <div class="miolo">
-      <p class="rotulo">Por que entrar</p>
-      <h2 class="titulo-secao">Ninguém cuida sozinho de uma família inteira.</h2>
-      <div class="grade grade--2">
-        <div><h3>Encaminhamentos</h3><p>Quando uma família precisa de um olhar que foge da sua área, você sabe para quem indicar. E quando precisam do seu, lembram de você.</p></div>
-        <div><h3>Troca entre áreas</h3><p>Conversa com quem acompanha a mesma mulher, a mesma gestação, a mesma família por outro ângulo. Caso difícil fica menos solitário.</p></div>
-        <div><h3>Visibilidade</h3><p>Seu trabalho passa a circular nos espaços da Estrutura da Escuta, ao lado de quem compartilha a mesma forma de cuidar.</p></div>
-        <div><h3>Famílias te encontram</h3><p>Seu perfil aparece aqui na busca, por área, estado e público que você atende.</p></div>
+      <p class="tag-sala"><span class="num">ii.</span><span class="rotulo">Por que entrar</span></p>
+      <h2 class="titulo-secao">Ninguém cuida sozinho de uma <em>família inteira</em>.</h2>
+      <div class="grade grade--4">
+        <div><span class="num">i.</span><h3>Encaminhamentos</h3><p>Quando uma família precisa de um olhar que foge da sua área, você sabe para quem indicar. E quando precisam do seu, lembram de você.</p></div>
+        <div><span class="num">ii.</span><h3>Troca entre áreas</h3><p>Conversa com quem acompanha a mesma mulher, a mesma gestação, a mesma família por outro ângulo. Caso difícil fica menos solitário.</p></div>
+        <div><span class="num">iii.</span><h3>Visibilidade</h3><p>Seu trabalho passa a circular nos espaços da Estrutura da Escuta, ao lado de quem compartilha a mesma forma de cuidar.</p></div>
+        <div><span class="num">iv.</span><h3>Famílias te encontram</h3><p>Seu perfil aparece aqui na busca, por área, estado e público que você atende.</p></div>
       </div>
     </div>
   </section>
 
-  <section id="cadastro" class="foto faixa-rede gutter">
-    <img src="/img/mesa.webp" alt="Mesa de madeira com caderno, xícara e planta sob luz natural" loading="lazy">
-    <div class="conteudo">
-      <p class="rotulo">Para quem fez o desafio</p>
-      <h2>Monte o seu perfil na rede.</h2>
-      <p>Entre na sua área com o mesmo e-mail e senha do desafio Estrutura da Escuta. Seu perfil aparece na busca assim que você salvar.</p>
-      <a class="cta" href="/area">Entrar na minha área <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  <section id="cadastro" class="faixa-clara gutter">
+    <img src="/img/sala-arco.webp" alt="" loading="lazy">
+    <div class="miolo">
+      <div class="conteudo">
+        <p class="rotulo">Para quem fez o desafio</p>
+        <h2>Monte o seu <em>perfil</em> na rede.</h2>
+        <p>Entre na sua área com o mesmo e-mail e senha do desafio Estrutura da Escuta. Seu perfil aparece na busca assim que você salvar.</p>
+        <div class="botoes"><a class="btn" href="/area">Entrar na minha área <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="rodape gutter">
   <div class="miolo">
-    <p>Estrutura da Escuta · área perinatal e parental</p>
-    <p>Contato: <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a></p>
+    <div class="colunas">
+      <div>
+        <p class="marca-rodape">Estrutura da Escuta</p>
+        <p>Um lugar para quem cuida do começo da vida. Organizado por Vanessa Ferreira Santos, psicóloga perinatal e psicanalista.</p>
+      </div>
+      <div>
+        <h4>No portal</h4>
+        <ul>
+          <li><a href="/eventos">Agenda</a></li>
+          <li><a href="/livros">Livros em promoção</a></li>
+          <li><a href="/artigos">Artigos</a></li>
+          <li><a href="/rede">Rede de profissionais</a></li>
+          <li><a href="/area">Minha área</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Da mesma casa</h4>
+        <ul>
+          <li><a href="https://avanessapsi.com.br" target="_blank" rel="noopener">Site da Vanessa</a></li>
+          <li><a href="https://avanessapsi.com.br/escuta" target="_blank" rel="noopener">Desafio Estrutura da Escuta</a></li>
+          <li><a href="https://avanessapsi.com.br/mentoria" target="_blank" rel="noopener">Mentoria</a></li>
+          <li><a href="https://arquiteturamaterna.substack.com" target="_blank" rel="noopener">Newsletter Frestas de Si</a></li>
+          <li><a href="https://instagram.com/avanessapsi" target="_blank" rel="noopener">Instagram @avanessapsi</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pe">
+      <span>Vanessa Ferreira Santos · CRP 06/136172</span>
+      <span>Contato: <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a></span>
+    </div>
   </div>
 </footer>
 <script src="/portal.js"></script>
