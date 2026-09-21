@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Portão · Estrutura da Escuta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap">
+<link rel="stylesheet" href="/estilo.css">
+<link rel="stylesheet" href="/adm/adm.css">
+</head>
+<body>
+
+<header class="gutter"><div class="miolo portal-topo">
+  <a class="marca" href="/" target="_blank" rel="noopener">Estrutura da Escuta</a>
+  <nav aria-label="Portão">
+    <a href="/" target="_blank" rel="noopener">Ver o portal</a>
+    <button type="button" class="link-botao" id="sair" hidden>Sair</button>
+  </nav>
+</div></header>
+
+<main class="gutter">
+  <div class="miolo">
+
+    <!-- Primeira vez: criar a senha -->
+    <section id="tela-criar" class="porta" hidden>
+      <p class="rotulo">Primeiro acesso</p>
+      <h1>Crie a senha do portão</h1>
+      <p class="suave">Use o código de instalação que o Claude te passou. Ele só vale uma vez.</p>
+      <form id="form-criar" novalidate>
+        <label class="campo">Código de instalação<input type="text" id="criar-codigo" autocomplete="off" required></label>
+        <label class="campo">Nova senha <span class="opcional">(pelo menos 10 caracteres)</span><input type="password" id="criar-senha" autocomplete="new-password" minlength="10" required></label>
+        <p class="aviso-erro" id="criar-erro" role="alert" hidden></p>
+        <button class="enviar" type="submit">Criar senha e entrar</button>
+      </form>
+    </section>
+
+    <!-- Entrar -->
+    <section id="tela-entrar" class="porta" hidden>
+      <p class="rotulo">Portão</p>
+      <h1>Entrar</h1>
+      <form id="form-entrar" novalidate>
+        <label class="campo">Senha<input type="password" id="entrar-senha" autocomplete="current-password" required></label>
+        <p class="aviso-erro" id="entrar-erro" role="alert" hidden></p>
+        <button class="enviar" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Painel -->
+    <section id="tela-painel" hidden>
+      <div class="abas" role="tablist" aria-label="O que editar">
+        <button role="tab" data-aba="evento" aria-selected="true">Eventos</button>
+        <button role="tab" data-aba="livro" aria-selected="false">Livros</button>
+        <button role="tab" data-aba="artigo" aria-selected="false">Artigos</button>
+        <button role="tab" data-aba="rede" aria-selected="false">Cadastros da rede <span class="contador" id="pendentes" hidden></span></button>
+      </div>
+
+      <div id="painel-conteudo">
+        <div class="painel-topo">
+          <p class="suave" id="dica-aba"></p>
+          <button type="button" class="enviar" id="novo">Novo</button>
+        </div>
+        <form id="form-item" class="cartao-form" novalidate hidden></form>
+        <div id="lista-itens" class="lista-adm"></div>
+      </div>
+
+      <div id="painel-rede" hidden>
+        <p class="suave" style="margin-bottom:24px">Cadastros novos chegam aqui primeiro. Só aparecem na busca do portal depois de publicados.</p>
+        <div id="lista-rede" class="lista-adm"></div>
+      </div>
+    </section>
+
+    <p class="carregando" id="carregando">Carregando…</p>
+  </div>
+</main>
+
+<div class="aviso-flutuante" id="aviso" role="status" hidden></div>
+<script src="/adm/adm.js"></script>
+</body>
+</html>

@@ -1,22 +1,32 @@
-# Rede de Profissionais
+# Estrutura da Escuta
 
-Site da Estrutura da Escuta. Por enquanto só a Rede de Profissionais. Estático, sem build.
+Portal da área perinatal e parental: eventos, livros em promoção, artigos,
+fresquinhos e a Rede de Profissionais (cadastro + busca).
 
-- `/rede` apresentação da rede (a raiz redireciona pra cá)
-- `/rede/consulta` consulta com a comunidade
+No ar: https://estruturadaescuta.rede-profissional.workers.dev
 
-Separado do Habitar Planner de propósito: se um cair, o outro segue no ar.
+## Como é feito
 
-## Relação com o Habitar
+- `public/`: as páginas (HTML, CSS e JS puros, sem build).
+- `src/index.js`: o servidor (Cloudflare Worker). Atende só `/api/*` e `/adm/api/*`.
+- `schema.sql`: as tabelas do banco próprio (Cloudflare D1 `estruturadaescuta`).
 
-A única ligação é a tabela `public.rede_consulta_respostas` no banco do Habitar
-(projeto Supabase `vanessa-planner`). O site usa a chave publicável, que pelas
-regras da tabela só pode **inserir** ali. Não lê nada, nem as próprias respostas,
-e não alcança nenhuma outra tabela. As respostas se leem pelo Habitar ou por SQL.
+Não depende do Habitar em nada: nem do app, nem do banco.
 
-## Publicação
+## Portão de administração
 
-Cloudflare Workers (assets estáticos), conta adm.escutapsis, projeto `estruturadaescuta`
-(estruturadaescuta.<conta>.workers.dev). Sem GitHub: publica com
-`npx wrangler deploy` (config em `wrangler.jsonc`, arquivos em `public/`).
-Cabeçalhos de segurança em `public/_headers`.
+`/adm`. Uma senha só, guardada como hash. No primeiro acesso ela é criada com o
+código de instalação (segredo `SETUP_CODE` na Cloudflare, uso único). Lá dentro:
+eventos, livros, artigos e os cadastros da rede, que só aparecem na busca depois
+de publicados. O e-mail das profissionais nunca sai no site.
+
+## Publicar
+
+Conta Cloudflare `adm.escutapsis@gmail.com`, sem GitHub.
+
+    npx wrangler deploy
+
+Mudou o banco? `npx wrangler d1 execute estruturadaescuta --remote --file=schema.sql`
+
+Teste local: `.dev.vars` com `SETUP_CODE=teste-local`, depois
+`npx wrangler d1 execute estruturadaescuta --local --file=schema.sql` e `npx wrangler dev --local`.

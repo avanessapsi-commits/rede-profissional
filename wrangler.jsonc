@@ -1,10 +1,21 @@
 {
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
   "name": "estruturadaescuta",
+  "main": "src/index.js",
   "compatibility_date": "2026-09-18",
   "assets": {
     "directory": "public",
+    "binding": "ASSETS",
     "html_handling": "drop-trailing-slash",
-    "not_found_handling": "404-page"
-  }
+    "not_found_handling": "404-page",
+    // Só a API passa pelo código; o resto são arquivos servidos direto.
+    "run_worker_first": ["/api/*", "/adm/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "estruturadaescuta",
+      "database_id": "7f600446-b098-402b-b506-8d22df1d76b8"
+    }
+  ]
 }

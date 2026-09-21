@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estrutura da Escuta</title>
+<meta name="description" content="Eventos, livros, artigos e uma rede de profissionais da área perinatal e parental.">
+<meta property="og:title" content="Estrutura da Escuta">
+<meta property="og:description" content="Eventos, livros, artigos e uma rede de profissionais da área perinatal e parental.">
+<meta property="og:image" content="/img/mesa.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap">
+<link rel="stylesheet" href="/estilo.css">
+</head>
+<body>
+<header class="gutter"><div class="miolo portal-topo">
+  <a class="marca" href="/">Estrutura da Escuta</a>
+  <nav aria-label="Seções">
+    <a href="/eventos">Eventos</a>
+    <a href="/livros">Livros</a>
+    <a href="/artigos">Artigos</a>
+    <a href="/rede">Rede</a>
+  </nav>
+</div></header>
+
+<main>
+  <section class="foto home-abertura gutter">
+    <img src="/img/mesa.webp" alt="Mesa de madeira com caderno, xícara e planta sob luz natural" fetchpriority="high">
+    <div class="conteudo">
+      <p class="rotulo">Área perinatal e parental</p>
+      <h1>Estrutura da Escuta</h1>
+      <p class="linha">Eventos, livros, artigos e uma rede de profissionais pra quem cuida de mulheres, gestantes, puérperas e famílias.</p>
+    </div>
+  </section>
+
+  <div class="gutter"><p class="miolo vazio" id="tudo-vazio" hidden style="padding-block:64px">O portal está sendo montado. Os primeiros eventos, livros e artigos chegam em breve.</p></div>
+
+  <section class="secao gutter" aria-labelledby="t-frescos">
+    <div class="miolo">
+      <div class="cabeca-secao"><h2 id="t-frescos">Fresquinhos</h2></div>
+      <div class="lista" data-lista="fresco" data-limite="6" data-esconder="1"><p class="carregando">Carregando…</p></div>
+    </div>
+  </section>
+
+  <section class="secao secao--bege gutter" aria-labelledby="t-eventos">
+    <div class="miolo">
+      <div class="cabeca-secao"><h2 id="t-eventos">Próximos eventos</h2><a class="ver-tudo" href="/eventos">Ver todos</a></div>
+      <div class="lista" data-lista="evento" data-limite="3" data-esconder="1"><p class="carregando">Carregando…</p></div>
+    </div>
+  </section>
+
+  <section class="secao gutter" aria-labelledby="t-livros">
+    <div class="miolo">
+      <div class="cabeca-secao"><h2 id="t-livros">Livros em promoção</h2><a class="ver-tudo" href="/livros">Ver todos</a></div>
+      <div class="livros" data-lista="livro" data-limite="6" data-esconder="1"><p class="carregando">Carregando…</p></div>
+    </div>
+  </section>
+
+  <section class="secao secao--bege gutter" aria-labelledby="t-artigos">
+    <div class="miolo">
+      <div class="cabeca-secao"><h2 id="t-artigos">Artigos</h2><a class="ver-tudo" href="/artigos">Ver todos</a></div>
+      <div class="lista" data-lista="artigo" data-limite="3" data-esconder="1"><p class="carregando">Carregando…</p></div>
+    </div>
+  </section>
+
+  <section class="foto faixa-rede gutter">
+    <img src="/img/oliveira.webp" alt="Mesa lateral com oliveira, tigela e livros sob luz natural" loading="lazy">
+    <div class="conteudo">
+      <p class="rotulo">Rede de profissionais</p>
+      <h2>Cuidado também se constrói em rede.</h2>
+      <p>Encontre quem atende na sua área, ou cadastre o seu trabalho.</p>
+      <div class="botoes">
+        <a class="cta" href="/rede#busca">Buscar profissional <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="cta" href="/rede#cadastro">Cadastrar meu trabalho <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape gutter">
+  <div class="miolo">
+    <p>Estrutura da Escuta · área perinatal e parental</p>
+    <p>Contato: <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a></p>
+  </div>
+</footer>
+<script src="/portal.js"></script>
+</body>
+</html>
