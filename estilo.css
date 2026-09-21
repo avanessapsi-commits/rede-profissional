@@ -1,0 +1,228 @@
+/* Mesma identidade da home da rede que vivia no Habitar (RedeProfissionalHome):
+   creme, bege, bordô, dourado e Fraunces nos títulos. Tema único de propósito:
+   é um impresso de papel, não uma interface. */
+:root {
+  --papel: #faf5ee;
+  --bege: #f3e9dd;
+  --linha: #e6d8cb;
+  --bordo: #58232e;
+  --bordo-hover: #6a2b38;
+  --dourado: #b07a1f; /* #D39A38 do Habitar escurecido: o original não passa contraste em texto pequeno */
+  --texto: #3e3033;
+  --suave: #736063;
+  --erro: #9b2c2c;
+  --serif: "Fraunces", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+a { color: var(--bordo); }
+:focus-visible { outline: 2px solid var(--bordo); outline-offset: 3px; }
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  color: var(--bordo);
+  text-wrap: balance;
+  margin: 0;
+}
+h1 { font-size: clamp(2.25rem, 5vw, 3.5rem); line-height: 1.1; }
+h2 { font-size: clamp(2rem, 4.2vw, 3rem); line-height: 1.15; }
+h3 { font-size: 1.25rem; line-height: 1.3; }
+p { margin: 0; }
+
+.rotulo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dourado);
+}
+.suave { color: var(--suave); }
+
+.gutter { padding-inline: clamp(16px, 5vw, 80px); }
+.miolo { max-width: 1152px; margin-inline: auto; width: 100%; }
+.secao { padding-block: clamp(72px, 9vw, 96px); }
+.secao--bege { background: var(--bege); }
+
+/* Cabeçalho */
+.topo {
+  display: flex;
+  justify-content: center;
+  padding-block: 20px;
+  border-bottom: 1px solid var(--linha);
+}
+.topo nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 32px; }
+.topo a {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--suave);
+  text-decoration: none;
+}
+.topo a:hover { color: var(--bordo-hover); }
+@media (max-width: 480px) { .topo .so-desktop { display: none; } }
+
+/* Fotos com véu */
+.foto {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.foto > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-width: none;
+}
+.foto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 55% at center, rgba(250,245,238,.78) 0%, rgba(250,245,238,.45) 55%, rgba(250,245,238,.15) 100%);
+}
+.foto > .conteudo { position: relative; z-index: 1; max-width: 32rem; padding-block: 64px; }
+.abertura { min-height: clamp(520px, 62vw, 760px); }
+.abertura h1 { margin-block: 16px 28px; }
+.abertura p.linha { max-width: 24rem; color: rgba(88,35,46,.85); margin-bottom: 40px; }
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bordo);
+  text-decoration: none;
+  border-bottom: 1px solid var(--bordo);
+  padding-bottom: 4px;
+  transition: gap .2s, color .2s;
+}
+.cta:hover { gap: 14px; color: var(--bordo-hover); }
+.cta svg { width: 15px; height: 15px; }
+
+/* Grades de texto */
+.grade {
+  display: grid;
+  gap: 48px 56px;
+  border-top: 1px solid var(--linha);
+  padding-top: 40px;
+}
+@media (min-width: 640px) { .grade--2 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 640px) { .grade--3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .grade--3 { grid-template-columns: repeat(3, 1fr); } }
+.grade h3 { margin-bottom: 12px; }
+.grade p { max-width: 28rem; color: var(--suave); }
+.titulo-secao { max-width: 42rem; margin-block: 16px 64px; }
+
+.areas { gap: 36px 56px; }
+.areas p { font-family: var(--serif); font-size: 1.25rem; color: var(--bordo); }
+
+.passo-num { font-family: var(--serif); font-size: 3rem; line-height: 1; color: var(--dourado); margin-bottom: 20px; }
+.passo-agora { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--bordo); margin-left: 8px; vertical-align: middle; }
+
+.convite { min-height: clamp(480px, 50vw, 560px); text-align: center; }
+.convite::after { background: radial-gradient(circle at center, rgba(250,245,238,.86) 0%, rgba(250,245,238,.62) 45%, rgba(250,245,238,.3) 100%); }
+.convite h2 { font-size: clamp(1.9rem, 3.4vw, 2.25rem); margin-bottom: 20px; }
+.convite p { color: rgba(88,35,46,.85); margin-bottom: 40px; }
+
+/* Rodapé */
+.rodape {
+  border-top: 1px solid var(--linha);
+  padding-block: 40px;
+  font-size: 13px;
+  color: var(--suave);
+}
+.rodape .miolo { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 40px; }
+.rodape p { max-width: 36rem; }
+
+/* Consulta */
+.consulta-topo { padding-block: clamp(56px, 8vw, 88px) 0; }
+.consulta-topo h1 { margin-block: 16px 20px; max-width: 40rem; }
+.consulta-topo .intro { max-width: 38rem; color: var(--suave); }
+
+.proposta {
+  margin-block: 48px 0;
+  padding: clamp(24px, 4vw, 40px);
+  background: var(--bege);
+  border-radius: 4px;
+  display: grid;
+  gap: 32px;
+}
+@media (min-width: 900px) { .proposta { grid-template-columns: repeat(3, 1fr); } }
+.proposta h3 { font-size: 1.1rem; margin-bottom: 10px; }
+.proposta ul { margin: 0; padding-left: 18px; color: var(--texto); }
+.proposta li + li { margin-top: 6px; }
+
+form { max-width: 40rem; display: grid; gap: 40px; padding-block: 56px 96px; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 12px; }
+legend, .pergunta {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--bordo);
+  margin-bottom: 4px;
+  padding: 0;
+}
+.ajuda { font-size: 13px; color: var(--suave); margin-top: -6px; }
+.opcional { font-family: var(--sans); font-size: 12px; color: var(--suave); letter-spacing: .02em; }
+
+input[type="text"], input[type="email"], textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--texto);
+  background: #fffdf9;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  padding: 12px 14px;
+}
+textarea { min-height: 110px; resize: vertical; }
+input:focus, textarea:focus { outline: 2px solid var(--bordo); outline-offset: 0; border-color: var(--bordo); }
+
+.escolha { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.escolha input { margin-top: 5px; accent-color: var(--bordo); width: 16px; height: 16px; flex: none; }
+
+.campo-dupla { display: grid; gap: 20px; }
+@media (min-width: 640px) { .campo-dupla { grid-template-columns: 1fr 1fr; } }
+.campo-dupla label { display: grid; gap: 8px; font-size: 14px; }
+
+.isca { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.enviar {
+  justify-self: start;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--papel);
+  background: var(--bordo);
+  border: 0;
+  border-radius: 4px;
+  padding: 16px 28px;
+  cursor: pointer;
+}
+.enviar:hover { background: var(--bordo-hover); }
+.enviar[disabled] { opacity: .6; cursor: wait; }
+
+.aviso-erro { color: var(--erro); font-size: 14px; }
+.falta legend, .falta .pergunta { color: var(--erro); }
+
+.obrigado { max-width: 34rem; padding-block: 96px 128px; }
+.obrigado h2 { margin-bottom: 16px; }
