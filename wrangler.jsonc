@@ -11,6 +11,12 @@
     // Só a API passa pelo código; o resto são arquivos servidos direto.
     "run_worker_first": ["/api/*", "/adm/api/*"]
   },
+  // O login da área usa as funções públicas do desafio no banco do Habitar,
+  // com a chave publicável (a mesma que o /escuta usa no navegador).
+  "vars": {
+    "SUPABASE_URL": "https://xecshgdpzrxoyerlhicf.supabase.co",
+    "SUPABASE_CHAVE": "sb_publishable_BwjQdU7LU_zFmuPpUx3qAw_tvfJ8lxz"
+  },
   "d1_databases": [
     {
       "binding": "DB",

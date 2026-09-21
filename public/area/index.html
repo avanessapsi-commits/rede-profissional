@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha área · Estrutura da Escuta</title>
+<meta name="description" content="Área de quem fez o desafio Estrutura da Escuta.">
+<meta property="og:title" content="Minha área">
+<meta property="og:description" content="Área de quem fez o desafio Estrutura da Escuta.">
+<meta property="og:image" content="/img/mesa.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap">
+<link rel="stylesheet" href="/estilo.css">
+</head>
+<body>
+<header class="gutter"><div class="miolo portal-topo">
+  <a class="marca" href="/">Estrutura da Escuta</a>
+  <nav aria-label="Seções">
+    <a href="/eventos">Eventos</a>
+    <a href="/livros">Livros</a>
+    <a href="/artigos">Artigos</a>
+    <a href="/rede">Rede</a>
+    <a href="/area" aria-current="page">Minha área</a>
+  </nav>
+</div></header>
+
+<main class="gutter">
+  <div class="miolo">
+
+    <section id="tela-entrar" class="porta-area" hidden>
+      <p class="rotulo">Minha área</p>
+      <h1>Entre com o e-mail e a senha do desafio.</h1>
+      <p class="suave">Os mesmos que você usou no desafio Estrutura da Escuta. Aqui ficam o seu resultado, os encontros da comunidade e o seu perfil na rede.</p>
+      <form id="form-entrar" novalidate>
+        <label class="campo">E-mail<input type="email" id="e-email" autocomplete="email" required></label>
+        <label class="campo">Senha<input type="password" id="e-senha" autocomplete="current-password" required></label>
+        <p class="aviso-erro" id="e-erro" role="alert" hidden></p>
+        <button class="enviar" type="submit" id="e-botao">Entrar</button>
+      </form>
+      <p class="ajuda">Esqueceu a senha? Escreva para <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a>.</p>
+    </section>
+
+    <div id="tela-area" hidden>
+      <section class="pagina-topo">
+        <p class="rotulo">Minha área</p>
+        <h1 id="ola"></h1>
+        <p><button type="button" class="link-sair" id="sair">Sair</button></p>
+      </section>
+
+      <section class="secao bloco-area" aria-labelledby="t-desafio">
+        <div class="cabeca-secao"><h2 id="t-desafio">Meu desafio</h2><a class="ver-tudo" href="https://avanessapsi.com.br/escuta" target="_blank" rel="noopener">Ver meu percurso completo</a></div>
+        <p class="progresso" id="progresso"></p>
+        <div class="lista" id="dias"></div>
+      </section>
+
+      <section class="secao bloco-area" aria-labelledby="t-acoes">
+        <div class="cabeca-secao"><h2 id="t-acoes">Da comunidade</h2></div>
+        <div class="lista" id="acoes"></div>
+      </section>
+
+      <section class="secao bloco-area" aria-labelledby="t-perfil" id="perfil">
+        <div class="cabeca-secao"><h2 id="t-perfil">Meu perfil na rede</h2><a class="ver-tudo" href="/rede#busca" id="ver-busca" hidden>Ver na busca</a></div>
+        <p class="suave" id="perfil-estado" style="margin-bottom:24px"></p>
+        <form id="form-perfil" novalidate style="padding-top:0">
+
+        <div class="campo-dupla">
+          <label>Nome<input type="text" id="c-nome" maxlength="160" autocomplete="name" required></label>
+          <label>Área<select id="c-area" required><option value="">Escolha</option><option>Psicologia</option><option>Psiquiatria</option><option>Obstetrícia</option><option>Pediatria</option><option>Nutrição</option><option>Fisioterapia</option><option>Enfermagem</option><option>Fonoaudiologia</option><option>Consultoria em amamentação</option><option>Doula</option><option>Educação física</option><option>Terapias corporais</option><option>Outras áreas do cuidado</option></select></label>
+        </div>
+        <div class="campo-tres">
+          <label>Cidade<input type="text" id="c-cidade" maxlength="120" autocomplete="address-level2"></label>
+          <label>Estado<select id="c-uf"><option value="">Escolha</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></label>
+        </div>
+        <label class="escolha"><input type="checkbox" id="c-online"> Atendo online</label>
+        <fieldset>
+          <legend>Quem você atende</legend>
+          <label class="escolha"><input type="checkbox" name="publicos" value="tentantes"> Tentantes</label><label class="escolha"><input type="checkbox" name="publicos" value="gestantes"> Gestantes</label><label class="escolha"><input type="checkbox" name="publicos" value="puerperas"> Puérperas</label><label class="escolha"><input type="checkbox" name="publicos" value="bebes"> Bebês e crianças</label><label class="escolha"><input type="checkbox" name="publicos" value="familias"> Famílias</label>
+        </fieldset>
+        <div class="campo-dupla">
+          <label>Como as famílias falam com você<input type="text" id="c-contato" maxlength="200" placeholder="Instagram, WhatsApp ou site" required></label>
+          <label>Registro profissional <span class="opcional">(se tiver)</span><input type="text" id="c-registro" maxlength="60" placeholder="Ex.: CRP 06/000000"></label>
+        </div>
+        <label class="campo">Sobre o seu trabalho <span class="opcional">(até 600 caracteres)</span><textarea id="c-descricao" maxlength="600"></textarea></label>
+
+          <p class="aviso-erro" id="c-erro" role="alert" hidden></p>
+          <div class="acoes-perfil">
+            <button class="enviar" type="submit" id="c-enviar">Salvar e aparecer na busca</button>
+            <button type="button" class="link-sair" id="tirar" hidden>Tirar meu perfil da rede</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <p class="carregando" id="carregando">Carregando…</p>
+  </div>
+</main>
+
+<footer class="rodape gutter">
+  <div class="miolo">
+    <p>Estrutura da Escuta · área perinatal e parental</p>
+    <p>Contato: <a href="mailto:avanessapsi@gmail.com">avanessapsi@gmail.com</a></p>
+  </div>
+</footer>
+<script src="/portal.js"></script>
+<script src="/area/area.js"></script>
+</body>
+</html>

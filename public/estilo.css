@@ -17,6 +17,8 @@
 }
 
 * { box-sizing: border-box; }
+/* Classe nenhuma pode desfazer o hidden (display:grid/flex passavam por cima). */
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
@@ -166,7 +168,7 @@ legend, .pergunta {
 .ajuda { font-size: 13px; color: var(--suave); margin-top: -6px; }
 .opcional { font-family: var(--sans); font-size: 12px; color: var(--suave); letter-spacing: .02em; }
 
-input[type="text"], input[type="email"], textarea {
+input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="date"], textarea {
   width: 100%;
   font: inherit;
   color: var(--texto);
@@ -356,3 +358,19 @@ select:focus { outline: 2px solid var(--bordo); outline-offset: 0; border-color:
 
 .filtros label.escolha { display: flex; align-items: center; gap: 10px; }
 .filtros label.escolha input { margin-top: 0; }
+
+/* ───────── Minha área ───────── */
+.porta-area { max-width: 30rem; padding-block: 72px 120px; display: grid; gap: 16px; }
+.porta-area h1 { font-size: clamp(2rem, 4vw, 2.6rem); }
+.porta-area form { padding-block: 16px 0; gap: 20px; }
+.link-sair { font: inherit; font-size: 13px; color: var(--suave); background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-sair:hover { color: var(--bordo); }
+.bloco-area { border-top: 1px solid var(--linha); padding-block: 56px; }
+.progresso { font-family: var(--serif); font-size: 1.25rem; color: var(--bordo); margin-bottom: 24px; }
+.dia { display: grid; grid-template-columns: 96px 1fr; gap: 20px; padding-block: 18px; align-items: baseline; }
+.dia .etiqueta { white-space: nowrap; }
+.dia--aberto .etiqueta, .dia--fechado .etiqueta { color: var(--suave); }
+.dia ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.dia li { font-family: var(--serif); font-size: 1.05rem; color: var(--bordo); }
+@media (max-width: 520px) { .dia { grid-template-columns: 1fr; gap: 4px; } }
+.acoes-perfil { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }

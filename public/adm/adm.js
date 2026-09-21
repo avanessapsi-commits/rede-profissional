@@ -22,6 +22,14 @@
       ["imagem", "Link da imagem da capa", "url", false, "https://"],
       ["resumo", "Por que vale a leitura", "textarea", false],
     ],
+    acao: [
+      ["titulo", "Título", "text", true, "Ex.: Encontro ao vivo de outubro"],
+      ["data_evento", "Data", "date", false],
+      ["hora", "Horário", "text", false, "Ex.: 20h"],
+      ["local", "Onde", "text", false, "Ex.: Zoom, Instagram, presencial em SP"],
+      ["link", "Link", "url", false, "https://"],
+      ["resumo", "Recado", "textarea", false],
+    ],
     artigo: [
       ["titulo", "Título", "text", true],
       ["fonte", "Onde foi publicado", "text", false, "Revista, site ou periódico"],
@@ -30,11 +38,12 @@
       ["resumo", "Resumo curto", "textarea", false],
     ],
   };
-  var NOMES = { evento: ["evento", "Novo evento"], livro: ["livro", "Novo livro"], artigo: ["artigo", "Novo artigo"] };
+  var NOMES = { evento: ["evento", "Novo evento"], livro: ["livro", "Novo livro"], artigo: ["artigo", "Novo artigo"], acao: ["aviso", "Novo aviso ou encontro"] };
   var DICAS = {
     evento: "Eventos passados somem do portal sozinhos no dia seguinte.",
     livro: "Preço muda rápido. Quando a promoção acabar, tire do ar ou exclua.",
     artigo: "O resumo aparece embaixo do título no portal.",
+    acao: "Só quem fez o desafio vê, na área dela. Com data, some sozinho depois que passa.",
   };
   var NOMES_PUBLICO = { tentantes: "Tentantes", gestantes: "Gestantes", puerperas: "Puérperas", bebes: "Bebês e crianças", familias: "Famílias" };
 
@@ -138,10 +147,10 @@
       return;
     }
     doTipo.forEach(function (i) {
-      var sub = aba === "evento" ? [dataBr(i.data_evento), i.local].filter(Boolean).join(" · ")
+      var sub = aba === "evento" || aba === "acao" ? [dataBr(i.data_evento), i.local].filter(Boolean).join(" · ")
         : aba === "livro" ? [i.autor, i.preco].filter(Boolean).join(" · ")
         : [i.fonte, i.autor].filter(Boolean).join(" · ");
-      var passou = aba === "evento" && i.data_evento && i.data_evento < hoje();
+      var passou = (aba === "evento" || aba === "acao") && i.data_evento && i.data_evento < hoje();
       lista.appendChild(el("div", { classe: "linha-adm" }, [
         el("div", null, [
           el("span", { classe: "estado " + (i.publicado && !passou ? "estado--no-ar" : "estado--fora"), texto: passou ? "Já passou" : i.publicado ? "No ar" : "Fora do ar" }),
@@ -214,7 +223,7 @@
     var lista = $("lista-rede");
     lista.textContent = "";
     if (!profissionais.length) {
-      lista.appendChild(el("p", { classe: "vazio", texto: "Nenhum cadastro ainda. Quando alguém se cadastrar em /rede, aparece aqui." }));
+      lista.appendChild(el("p", { classe: "vazio", texto: "Nenhum perfil ainda. Quando uma participante do desafio montar o dela em /area, aparece aqui." }));
       return;
     }
     profissionais.forEach(function (p) {

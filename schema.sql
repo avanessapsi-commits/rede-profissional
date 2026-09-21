@@ -1,13 +1,13 @@
 -- Banco próprio do portal (Cloudflare D1). Nada aqui depende do Habitar.
 
--- Eventos, livros e artigos. Um tipo só de tabela porque os três passam pelos
--- mesmos passos: cadastra no portão, publica, aparece nos fresquinhos.
+-- Eventos, livros, artigos e ações da comunidade. Uma tabela só porque todos
+-- passam pelos mesmos passos no portão. 'acao' só aparece pra quem está logada.
 CREATE TABLE IF NOT EXISTS itens (
   id TEXT PRIMARY KEY,
-  tipo TEXT NOT NULL CHECK (tipo IN ('evento', 'livro', 'artigo')),
+  tipo TEXT NOT NULL CHECK (tipo IN ('evento', 'livro', 'artigo', 'acao')),
   titulo TEXT NOT NULL,
   resumo TEXT,
-  link TEXT NOT NULL,
+  link TEXT,
   imagem TEXT,
   autor TEXT,
   -- evento
@@ -62,3 +62,16 @@ CREATE TABLE IF NOT EXISTS tentativas (
   em TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 CREATE INDEX IF NOT EXISTS tentativas_ip ON tentativas (ip, acao, em);
+
+-- Sessão de quem fez o desafio e entrou na área dela. O login passa pela
+-- porta do próprio desafio (desafio_entrar) e o token dele fica aqui, só no
+-- servidor, pra buscar o resultado (desafio_estado).
+CREATE TABLE IF NOT EXISTS sessoes_rede (
+  token TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  nome TEXT,
+  whatsapp TEXT,
+  instagram TEXT,
+  expira TEXT NOT NULL,
+  desafio_token TEXT
+);

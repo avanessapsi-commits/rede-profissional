@@ -1,12 +1,14 @@
 // Servidor do portal da Estrutura da Escuta.
-// /api/*      público: conteúdo publicado, busca da rede, cadastro
+// /api/*      público: conteúdo publicado, busca da rede, área de quem fez o desafio
 // /adm/api/*  portão de administração (sessão por cookie)
 // Todo o resto são os arquivos de public/, servidos direto pela Cloudflare.
 
-const TIPOS = ["evento", "livro", "artigo"];
+const TIPOS = ["evento", "livro", "artigo"];       // públicos
+const TIPOS_ADM = [...TIPOS, "acao"];             // "acao" só aparece na área delas
 const PUBLICOS = ["tentantes", "gestantes", "puerperas", "bebes", "familias"];
 const SESSAO_DIAS = 30;
 const COOKIE = "adm_sessao";
+const COOKIE_REDE = "rede_sessao";
 
 // Campos que o portão pode gravar em cada tipo, com o tamanho máximo.
 const CAMPOS_ITEM = {
@@ -19,6 +21,7 @@ const OBRIGATORIOS = {
   evento: ["titulo", "link", "data_evento"],
   livro: ["titulo", "link", "preco"],
   artigo: ["titulo", "link"],
+  acao: ["titulo"],
 };
 
 export default {
@@ -63,7 +66,7 @@ async function publico(req, env, url) {
     } else {
       // Fresquinhos: o que entrou por último, de qualquer tipo.
       r = await env.DB.prepare(
-        `SELECT * FROM itens WHERE publicado = 1
+        `SELECT * FROM itens WHERE publicado = 1 AND tipo != 'acao'
            AND NOT (tipo = 'evento' AND data_evento < date('now', '-3 hours'))
          ORDER BY criado_em DESC LIMIT ?`
       ).bind(limite).all();
@@ -79,36 +82,160 @@ async function publico(req, env, url) {
     return json({ profissionais: r.results.map((p) => ({ ...p, online: !!p.online, publicos: lerLista(p.publicos) })) }, 200, 60);
   }
 
-  if (rota === "/api/cadastro" && req.method === "POST") {
+  // ───── área de quem fez o desafio ─────
+  // Login com o mesmo e-mail e senha do desafio, pela porta que o próprio
+  // desafio usa (desafio_entrar, chave pública). O token que ela devolve fica
+  // guardado só aqui no servidor e busca o resultado (desafio_estado).
+  // Efeito conhecido: entrar aqui desconecta o /escuta em outro aparelho.
+  if (rota === "/api/rede/entrar" && req.method === "POST") {
     exigirMesmaOrigem(req, url);
     const ip = req.headers.get("CF-Connecting-IP") || "?";
-    await freio(env, ip, "cadastro", 5, 60);
+    await freio(env, ip, "login_rede", 10, 15);
     const b = await corpo(req);
-    if (b.site) return json({ ok: true }); // isca de robô: finge que deu certo
+    const email = texto(b.email, 200, "seu e-mail").toLowerCase();
+    const r = await desafio(env, "desafio_entrar", { p_email: email, p_senha: String(b.senha || "") });
+    if (r.erro === "muitas_tentativas") throw new Recusa("Muitas tentativas seguidas. Espere uns minutos.", 429);
+    if (!r.token) { await registrar(env, ip, "login_rede"); throw new Recusa("E-mail ou senha não conferem com o cadastro do desafio.", 401); }
+    const estado = await desafio(env, "desafio_estado", { p_token: r.token });
 
-    const p = {
-      nome: texto(b.nome, 160, "seu nome"),
-      area: texto(b.area, 120, "sua área"),
-      registro: texto(b.registro, 60),
-      cidade: texto(b.cidade, 120),
-      uf: b.uf ? String(b.uf).trim().toUpperCase() : null,
-      online: b.online ? 1 : 0,
-      publicos: JSON.stringify((Array.isArray(b.publicos) ? b.publicos : []).filter((x) => PUBLICOS.includes(x))),
-      contato: texto(b.contato, 200, "como as famílias falam com você"),
-      descricao: texto(b.descricao, 600),
-      email: texto(b.email, 200, "seu e-mail"),
-    };
-    if (p.uf && !/^[A-Z]{2}$/.test(p.uf)) throw new Recusa("Estado: use a sigla, como SP ou RJ.");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) throw new Recusa("Confira o e-mail.");
-
+    const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+    await env.DB.prepare("DELETE FROM sessoes_rede WHERE expira < strftime('%Y-%m-%dT%H:%M:%SZ', 'now')").run();
     await env.DB.prepare(
-      `INSERT INTO profissionais (id, nome, area, registro, cidade, uf, online, publicos, contato, descricao, email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(crypto.randomUUID(), p.nome, p.area, p.registro, p.cidade, p.uf, p.online, p.publicos, p.contato, p.descricao, p.email).run();
-    return json({ ok: true }, 201);
+      `INSERT INTO sessoes_rede (token, email, nome, desafio_token, expira)
+       VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '+${SESSAO_DIAS} days'))`
+    ).bind(token, email, estado.nome || null, r.token).run();
+    return json({ ok: true }, 200, 0, {
+      "Set-Cookie": `${COOKIE_REDE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSAO_DIAS * 86400}`,
+    });
+  }
+
+  if (rota === "/api/area" && req.method === "GET") {
+    const sessao = await sessaoRede(req, env);
+    if (!sessao) throw new Recusa("Entre com o e-mail e a senha do desafio.", 401);
+    let estado;
+    try {
+      estado = await desafio(env, "desafio_estado", { p_token: sessao.desafio_token });
+    } catch (e) {
+      if (e instanceof Recusa && e.status === 409) {
+        // Ela entrou no /escuta depois e o token do desafio mudou: pede login de novo.
+        await env.DB.prepare("DELETE FROM sessoes_rede WHERE token = ?").bind(lerCookie(req, COOKIE_REDE)).run();
+        throw new Recusa("Você entrou no desafio em outro lugar. Entre de novo aqui.", 401);
+      }
+      throw e;
+    }
+    const dias = [];
+    for (let d = 1; d <= (estado.total_dias || 7); d++) {
+      const resp = (estado.respostas || {})[String(d)];
+      dias.push({
+        dia: d,
+        liberado: d <= (estado.dias_liberados || 0),
+        concluido_em: resp && resp.concluido_em ? resp.concluido_em : null,
+        ideias: resp && resp.concluido_em ? ideiasDoDia(resp.conteudo) : [],
+      });
+    }
+    const acoes = await env.DB.prepare(
+      `SELECT id, titulo, resumo, link, data_evento, hora, local FROM itens
+        WHERE tipo = 'acao' AND publicado = 1
+          AND (data_evento IS NULL OR data_evento >= date('now', '-3 hours'))
+        ORDER BY data_evento IS NULL, data_evento ASC, criado_em DESC`
+    ).all();
+    return json({
+      nome: estado.nome || sessao.nome,
+      desafio: { total: estado.total_dias || 7, concluidos: dias.filter((x) => x.concluido_em).length, dias },
+      acoes: acoes.results,
+    });
+  }
+
+  if (rota === "/api/rede/sair" && req.method === "POST") {
+    exigirMesmaOrigem(req, url);
+    const t = lerCookie(req, COOKIE_REDE);
+    if (t) await env.DB.prepare("DELETE FROM sessoes_rede WHERE token = ?").bind(t).run();
+    return json({ ok: true }, 200, 0, { "Set-Cookie": `${COOKIE_REDE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0` });
+  }
+
+  if (rota === "/api/rede/eu") {
+    if (req.method !== "GET") exigirMesmaOrigem(req, url);
+    const sessao = await sessaoRede(req, env);
+    if (!sessao) throw new Recusa("Entre com o e-mail e a senha do desafio.", 401);
+    const atual = await env.DB.prepare("SELECT * FROM profissionais WHERE email = ?").bind(sessao.email).first();
+
+    if (req.method === "GET") {
+      if (atual) {
+        return json({ existe: true, publicado: !!atual.aprovado, perfil: { ...atual, online: !!atual.online, publicos: lerLista(atual.publicos) } });
+      }
+      // Primeira vez: começa com o nome que ela deu no desafio.
+      return json({ existe: false, perfil: { nome: sessao.nome, contato: "", publicos: [], online: false } });
+    }
+
+    if (req.method === "PUT") {
+      const b = await corpo(req);
+      const p = {
+        nome: texto(b.nome, 160, "seu nome"),
+        area: texto(b.area, 120, "sua área"),
+        registro: texto(b.registro, 60),
+        cidade: texto(b.cidade, 120),
+        uf: b.uf ? String(b.uf).trim().toUpperCase() : null,
+        online: b.online ? 1 : 0,
+        publicos: JSON.stringify((Array.isArray(b.publicos) ? b.publicos : []).filter((x) => PUBLICOS.includes(x))),
+        contato: texto(b.contato, 200, "como as famílias falam com você"),
+        descricao: texto(b.descricao, 600),
+      };
+      if (p.uf && !/^[A-Z]{2}$/.test(p.uf)) throw new Recusa("Estado: use a sigla, como SP ou RJ.");
+      if (atual) {
+        // Se a Vanessa tirou o perfil da busca, editar não põe de volta.
+        await env.DB.prepare(
+          `UPDATE profissionais SET nome = ?, area = ?, registro = ?, cidade = ?, uf = ?, online = ?, publicos = ?, contato = ?, descricao = ? WHERE id = ?`
+        ).bind(p.nome, p.area, p.registro, p.cidade, p.uf, p.online, p.publicos, p.contato, p.descricao, atual.id).run();
+      } else {
+        // Quem fez o desafio já é conhecida: entra direto na busca.
+        await env.DB.prepare(
+          `INSERT INTO profissionais (id, aprovado, nome, area, registro, cidade, uf, online, publicos, contato, descricao, email)
+           VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(crypto.randomUUID(), p.nome, p.area, p.registro, p.cidade, p.uf, p.online, p.publicos, p.contato, p.descricao, sessao.email).run();
+      }
+      return json({ ok: true });
+    }
+
+    if (req.method === "DELETE") {
+      await env.DB.prepare("DELETE FROM profissionais WHERE email = ?").bind(sessao.email).run();
+      return json({ ok: true });
+    }
   }
 
   return json({ erro: "Não encontrado." }, 404);
+}
+
+async function desafio(env, fn, args) {
+  let resp;
+  try {
+    resp = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      headers: { apikey: env.SUPABASE_CHAVE, "Content-Type": "application/json" },
+      body: JSON.stringify(args),
+    });
+  } catch (e) {
+    console.error(fn, e);
+    throw new Recusa("Não consegui falar com o desafio agora. Tente de novo em alguns minutos.", 503);
+  }
+  const d = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    if (String(d.message || "").includes("token_invalido")) throw new Recusa("token_invalido", 409);
+    console.error(fn, resp.status, d);
+    throw new Recusa("Não consegui falar com o desafio agora. Tente de novo em alguns minutos.", 503);
+  }
+  return d;
+}
+
+// Cada dia do desafio guarda exercícios (ex1, ex2...) com a "ideia" central.
+function ideiasDoDia(conteudo) {
+  const ideias = [];
+  const visitar = (v) => {
+    if (!v || typeof v !== "object") return;
+    if (typeof v.ideia === "string" && v.ideia.trim()) ideias.push(v.ideia.trim());
+    for (const k of Object.keys(v)) if (v[k] && typeof v[k] === "object") visitar(v[k]);
+  };
+  visitar(conteudo);
+  return ideias;
 }
 
 function itemPublico(i) {
@@ -171,7 +298,7 @@ async function adm(req, env, url) {
 
   if (rota === "/itens" && req.method === "POST") {
     const b = await corpo(req);
-    if (!TIPOS.includes(b.tipo)) throw new Recusa("Tipo inválido.");
+    if (!TIPOS_ADM.includes(b.tipo)) throw new Recusa("Tipo inválido.");
     const d = dadosItem(b);
     const id = crypto.randomUUID();
     const cols = Object.keys(d);
@@ -242,6 +369,14 @@ async function abrirSessao(env) {
   });
 }
 
+function sessaoRede(req, env) {
+  const t = lerCookie(req, COOKIE_REDE);
+  if (!t) return null;
+  return env.DB.prepare(
+    "SELECT email, nome, desafio_token FROM sessoes_rede WHERE token = ? AND expira > strftime('%Y-%m-%dT%H:%M:%SZ', 'now')"
+  ).bind(t).first();
+}
+
 async function sessaoValida(req, env) {
   const t = lerCookie(req);
   if (!t) return false;
@@ -250,8 +385,8 @@ async function sessaoValida(req, env) {
   ).bind(t).first());
 }
 
-function lerCookie(req) {
-  const m = (req.headers.get("Cookie") || "").match(new RegExp(`(?:^|;\\s*)${COOKIE}=([0-9a-f]{64})`));
+function lerCookie(req, nome = COOKIE) {
+  const m = (req.headers.get("Cookie") || "").match(new RegExp(`(?:^|;\\s*)${nome}=([0-9a-f]{64})`));
   return m ? m[1] : null;
 }
 
@@ -280,7 +415,6 @@ async function freio(env, ip, acao, max, minutos) {
     `SELECT COUNT(*) n FROM tentativas WHERE ip = ? AND acao = ? AND em > strftime('%Y-%m-%dT%H:%M:%SZ', 'now', ?)`
   ).bind(ip, acao, `-${minutos} minutes`).first();
   if (r.n >= max) throw new Recusa("Muitas tentativas seguidas. Espere um pouco e tente de novo.", 429);
-  if (acao === "cadastro") await registrar(env, ip, acao);
 }
 function registrar(env, ip, acao) {
   return env.DB.prepare("INSERT INTO tentativas (ip, acao) VALUES (?, ?)").bind(ip, acao).run();
