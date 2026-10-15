@@ -10,6 +10,7 @@ import json
 import datetime
 import requests
 import sys
+import time
 from urllib.parse import urlencode
 from xml.etree import ElementTree as ET
 
@@ -49,7 +50,9 @@ class RadarBusca:
         for termo in TERMOS_PUBMED + TERMOS_PT:
             try:
                 # 1. esearch: buscar IDs
-                query = f'{termo}[TIAB] AND ("{self.data_str}"[Date - Completion])'
+                # Intervalo de datas (entrada no PubMed de data_str até hoje). Antes era
+                # uma data só, e a busca pegava apenas o dia de 7 dias atrás.
+                query = f'{termo}[TIAB] AND ("{self.data_str}"[EDAT] : "3000"[EDAT])'
                 params = {
                     "db": "pubmed",
                     "term": query,
@@ -58,6 +61,8 @@ class RadarBusca:
                     "email": EMAIL_NCBI,
                 }
                 url_search = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+                # Sem chave, o NCBI aceita até 3 pedidos por segundo; acima disso devolve 429.
+                time.sleep(0.5)
                 resp = requests.get(url_search, params=params, timeout=10)
                 resp.raise_for_status()
 
@@ -74,6 +79,7 @@ class RadarBusca:
                     "rettype": "xml",
                     "email": EMAIL_NCBI,
                 }
+                time.sleep(0.5)
                 resp_fetch = requests.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
                                         params=params_fetch, timeout=10)
                 resp_fetch.raise_for_status()
@@ -82,7 +88,8 @@ class RadarBusca:
 
                 for article in root_fetch.findall(".//PubmedArticle"):
                     dados = self._extrair_pubmed(article)
-                    if dados and dados not in self.artigos:
+                    # O mesmo artigo volta por mais de um termo; compara pelo link (PMID).
+                    if dados and dados["link"] not in {a["link"] for a in self.artigos}:
                         self.artigos.append(dados)
 
             except Exception as e:
