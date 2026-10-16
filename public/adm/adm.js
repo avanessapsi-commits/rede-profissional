@@ -223,7 +223,7 @@
     var lista = $("lista-rede");
     lista.textContent = "";
     if (!profissionais.length) {
-      lista.appendChild(el("p", { classe: "vazio", texto: "Nenhum perfil ainda. Quando uma participante do desafio montar o dela em /area, aparece aqui." }));
+      lista.appendChild(el("p", { classe: "vazio", texto: "Nenhum perfil ainda. Quando uma profissional montar o dela em /area, aparece aqui." }));
       return;
     }
     profissionais.forEach(function (p) {

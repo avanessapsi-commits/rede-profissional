@@ -7,6 +7,14 @@ const TIPOS = ["evento", "livro", "artigo"];       // públicos
 const TIPOS_ADM = [...TIPOS, "acao"];             // "acao" só aparece na área delas
 const PUBLICOS = ["tentantes", "gestantes", "puerperas", "bebes", "familias"];
 const SESSAO_DIAS = 30;
+const CODIGO_MINUTOS = 10;     // validade do código de entrada por e-mail
+const CODIGO_TENTATIVAS = 5;   // erros antes de o código morrer
+// Tetos do dia (fuso de SP). O total fica abaixo da cota grátis do Resend (100/dia).
+const ENVIOS_DIA_TOTAL = 80;   // códigos enviados no portal inteiro
+const ENVIOS_DIA_EMAIL = 10;   // códigos enviados pro mesmo destinatário
+const ERROS_DIA_EMAIL = 10;    // códigos errados por e-mail; não zera ao pedir outro código
+const RESEND_URL = "https://api.resend.com/emails";
+const RESEND_TEMPO_MS = 10000; // tempo-limite do envio; passou disso, o envio fica "incerto"
 const COOKIE = "adm_sessao";
 const COOKIE_REDE = "rede_sessao";
 
@@ -109,9 +117,136 @@ async function publico(req, env, url) {
     });
   }
 
+  // ───── entrada por código de e-mail (qualquer profissional) ─────
+  // Não passa pelo desafio nem pelo Habitar. A sessão sai sem desafio_token,
+  // e é isso que o servidor confere antes de entregar qualquer dado do desafio.
+  if (rota === "/api/rede/codigo" && req.method === "POST") {
+    exigirMesmaOrigem(req, url);
+    const ip = req.headers.get("CF-Connecting-IP") || "?";
+    const b = await corpo(req);
+    const email = lerEmail(b.email);
+    const dev = modoDevCodigo(env, url);
+    if (!env.CODIGO_SEGREDO || (!dev && !(env.RESEND_API_KEY && env.EMAIL_REMETENTE))) {
+      throw new Recusa("A entrada por código ainda não está disponível. Se você fez o desafio, entre com a senha dele.", 503);
+    }
+    // Freio por IP e por e-mail (o e-mail entra como hash, nunca em texto).
+    const chaveEmail = "email:" + (await hmac(env.CODIGO_SEGREDO, "freio:" + email));
+    await freio(env, ip, "codigo_pedir", 10, 15);
+    await freio(env, chaveEmail, "codigo_pedir", 3, 15);
+    await registrar(env, ip, "codigo_pedir");
+    await registrar(env, chaveEmail, "codigo_pedir");
+
+    // Tetos do dia, com a vaga reservada antes de enviar (seguro com pedidos simultâneos).
+    const envioEmail = "envio:" + chaveEmail.slice("email:".length);
+    const dia = diaSP(agora(env, req, url));
+    const diaEmail = await reservar(env, envioEmail, ENVIOS_DIA_EMAIL, dia);
+    if (!diaEmail) {
+      throw new Recusa("Já mandamos muitos códigos pra este e-mail hoje. Tente de novo amanhã.", 429);
+    }
+    const diaTotal = await reservar(env, "envio:total", ENVIOS_DIA_TOTAL, dia);
+    if (!diaTotal) {
+      await devolver(env, envioEmail, diaEmail);
+      throw new Recusa("A entrada por código atingiu o limite de hoje. Tente de novo amanhã ou, se fez o desafio, entre com a senha dele.", 429);
+    }
+
+    const codigo = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
+    await env.DB.prepare("DELETE FROM codigos_rede WHERE expira < strftime('%Y-%m-%dT%H:%M:%SZ', 'now')").run();
+    await env.DB.prepare("DELETE FROM limites WHERE dia < ?").bind(dia).run();
+    // Um código vivo por e-mail: pedir outro substitui o anterior.
+    await env.DB.prepare(
+      `INSERT INTO codigos_rede (email, hash, expira, tentativas)
+       VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '+${CODIGO_MINUTOS} minutes'), 0)
+       ON CONFLICT(email) DO UPDATE SET hash = excluded.hash, expira = excluded.expira, tentativas = 0,
+         criado_em = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')`
+    ).bind(email, await hashCodigo(env, email, codigo)).run();
+
+    // Teste local sem e-mail: o código volta na tela. Com RESEND_URL_TESTE (um
+    // Resend falso em localhost), passa pelo envio de verdade antes de voltar.
+    const urlTeste = dev ? urlResendTeste(env) : null;
+    if (dev && !urlTeste) return json({ ok: true, codigo_dev: codigo });
+
+    const envio = await enviarCodigo(env, email, codigo, urlTeste || RESEND_URL);
+    if (envio === "recusado") {
+      // O Resend disse que não mandou: o código morre e as vagas voltam pro dia em que foram reservadas.
+      await env.DB.prepare("DELETE FROM codigos_rede WHERE email = ?").bind(email).run();
+      await devolver(env, envioEmail, diaEmail);
+      await devolver(env, "envio:total", diaTotal);
+      throw new Recusa("Não consegui mandar o código agora. Tente de novo em alguns minutos.", 503);
+    }
+    if (envio === "incerto") {
+      // Estourou o tempo ou caiu a conexão: o e-mail pode ter saído. O código
+      // continua valendo e as vagas ficam contadas (não dá pra saber se gastou).
+      throw new Recusa("Não deu pra confirmar o envio. Confira o seu e-mail em alguns minutos; se o código não chegar, peça outro.", 503);
+    }
+    if (urlTeste) return json({ ok: true, codigo_dev: codigo });
+    // Mesma resposta pra qualquer e-mail: não diz se ela já tem perfil.
+    return json({ ok: true });
+  }
+
+  if (rota === "/api/rede/codigo/entrar" && req.method === "POST") {
+    exigirMesmaOrigem(req, url);
+    const ip = req.headers.get("CF-Connecting-IP") || "?";
+    await freio(env, ip, "codigo_entrar", 20, 15);
+    if (!env.CODIGO_SEGREDO) throw new Recusa("A entrada por código ainda não está disponível.", 503);
+    const b = await corpo(req);
+    const email = lerEmail(b.email);
+    const codigo = String(b.codigo || "").replace(/\D/g, "");
+    const vencido = "Código inválido ou vencido. Peça um novo.";
+
+    // Teto de erros do dia por e-mail. Toda tentativa reserva uma vaga ANTES de
+    // comparar (assim pedidos simultâneos não passam do teto) e a vaga volta se
+    // o código estiver certo ou se nem houver código vivo. Pedir outro código não zera.
+    const chaveErro = "erro:" + (await hmac(env.CODIGO_SEGREDO, "freio:" + email));
+    const diaErro = await reservar(env, chaveErro, ERROS_DIA_EMAIL, diaSP(agora(env, req, url)));
+    if (!diaErro) {
+      await registrar(env, ip, "codigo_entrar");
+      await env.DB.prepare("DELETE FROM codigos_rede WHERE email = ?").bind(email).run();
+      throw new Recusa("Muitos códigos errados pra este e-mail hoje. Tente de novo amanhã.", 429);
+    }
+
+    // Mesma ideia por código: a tentativa é reservada no código antes de comparar,
+    // e acima de 5 o código nem é lido.
+    const c = await env.DB.prepare(
+      `UPDATE codigos_rede SET tentativas = tentativas + 1
+        WHERE email = ? AND expira > strftime('%Y-%m-%dT%H:%M:%SZ', 'now') AND tentativas < ?
+        RETURNING hash, tentativas`
+    ).bind(email, CODIGO_TENTATIVAS).first();
+    if (!c) {
+      await devolver(env, chaveErro, diaErro);
+      await registrar(env, ip, "codigo_entrar");
+      throw new Recusa(vencido, 401);
+    }
+
+    const hash = await hashCodigo(env, email, codigo);
+    if (codigo.length !== 6 || !igual(hash, c.hash)) {
+      await registrar(env, ip, "codigo_entrar");
+      if (c.tentativas >= CODIGO_TENTATIVAS) {
+        await env.DB.prepare("DELETE FROM codigos_rede WHERE email = ?").bind(email).run();
+        throw new Recusa("Código errado muitas vezes. Peça um novo.", 401);
+      }
+      throw new Recusa("Esse código não confere. Confira no e-mail e tente de novo.", 401);
+    }
+    // Uso único: só entra quem conseguir apagar o código (dois pedidos juntos, só um passa).
+    const usado = await env.DB.prepare("DELETE FROM codigos_rede WHERE email = ? AND hash = ?").bind(email, hash).run();
+    if (!usado.meta || !usado.meta.changes) throw new Recusa(vencido, 401);
+    await devolver(env, chaveErro, diaErro);
+
+    const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+    await env.DB.prepare("DELETE FROM sessoes_rede WHERE expira < strftime('%Y-%m-%dT%H:%M:%SZ', 'now')").run();
+    await env.DB.prepare(
+      `INSERT INTO sessoes_rede (token, email, nome, desafio_token, expira)
+       VALUES (?, ?, NULL, NULL, strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '+${SESSAO_DIAS} days'))`
+    ).bind(token, email).run();
+    return json({ ok: true }, 200, 0, {
+      "Set-Cookie": `${COOKIE_REDE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSAO_DIAS * 86400}`,
+    });
+  }
+
   if (rota === "/api/area" && req.method === "GET") {
     const sessao = await sessaoRede(req, env);
-    if (!sessao) throw new Recusa("Entre com o e-mail e a senha do desafio.", 401);
+    if (!sessao) throw new Recusa("Entre na sua área para continuar.", 401);
+    // Entrou por código: só a rede. Percurso e avisos da comunidade são do desafio.
+    if (!sessao.desafio_token) return json({ modo: "codigo", nome: sessao.nome || null });
     let estado;
     try {
       estado = await desafio(env, "desafio_estado", { p_token: sessao.desafio_token });
@@ -140,6 +275,7 @@ async function publico(req, env, url) {
         ORDER BY data_evento IS NULL, data_evento ASC, criado_em DESC`
     ).all();
     return json({
+      modo: "desafio",
       nome: estado.nome || sessao.nome,
       desafio: { total: estado.total_dias || 7, concluidos: dias.filter((x) => x.concluido_em).length, dias },
       acoes: acoes.results,
@@ -156,7 +292,7 @@ async function publico(req, env, url) {
   if (rota === "/api/rede/eu") {
     if (req.method !== "GET") exigirMesmaOrigem(req, url);
     const sessao = await sessaoRede(req, env);
-    if (!sessao) throw new Recusa("Entre com o e-mail e a senha do desafio.", 401);
+    if (!sessao) throw new Recusa("Entre na sua área para continuar.", 401);
     const atual = await env.DB.prepare("SELECT * FROM profissionais WHERE email = ?").bind(sessao.email).first();
 
     if (req.method === "GET") {
@@ -236,6 +372,100 @@ function ideiasDoDia(conteudo) {
   };
   visitar(conteudo);
   return ideias;
+}
+
+function lerEmail(v) {
+  const email = texto(v, 200, "seu e-mail").toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Recusa("Confira o e-mail: parece incompleto.");
+  return email;
+}
+
+// Teste local: o código volta na resposta em vez de ir por e-mail. Precisa das
+// duas travas juntas: a variável (só no .dev.vars, que não sobe no deploy) e o
+// pedido chegando por localhost. No endereço publicado a segunda nunca vale.
+function modoDevCodigo(env, url) {
+  return env.MODO_DEV_CODIGO === "1" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+}
+
+async function hmac(segredo, mensagem) {
+  const chave = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(segredo), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  return hex(new Uint8Array(await crypto.subtle.sign("HMAC", chave, new TextEncoder().encode(mensagem))));
+}
+// Relógio do pedido. No teste local (as mesmas duas travas do código na tela)
+// pode ser trocado pelo cabeçalho X-Relogio-Teste, pra simular a virada do dia.
+function agora(env, req, url) {
+  if (modoDevCodigo(env, url)) {
+    const t = new Date(req.headers.get("X-Relogio-Teste") || "");
+    if (!isNaN(t.getTime())) return t;
+  }
+  return new Date();
+}
+// Dia no fuso de SP (UTC-3, sem horário de verão desde 2019), como AAAA-MM-DD.
+function diaSP(data) { return new Date(data.getTime() - 3 * 3600 * 1000).toISOString().slice(0, 10); }
+
+// Reserva uma vaga no contador do dia. Soma e lê num comando só, e só soma se
+// ainda houver vaga: recusa não infla o contador, e dois pedidos juntos nunca
+// recebem a mesma vaga. Devolve o dia em que a vaga ficou (pra devolver nele
+// mesmo) ou null se não coube. Dia novo (fuso de SP) recomeça do 1; pedido que
+// chega com um dia mais velho que o do contador (virada no meio) conta no mais novo.
+async function reservar(env, chave, max, dia) {
+  const r = await env.DB.prepare(
+    `INSERT INTO limites (chave, dia, n) VALUES (?1, ?2, 1)
+     ON CONFLICT(chave) DO UPDATE SET
+       n = CASE WHEN excluded.dia > limites.dia THEN 1 ELSE limites.n + 1 END,
+       dia = MAX(limites.dia, excluded.dia)
+     WHERE excluded.dia > limites.dia OR limites.n < ?3
+     RETURNING dia`
+  ).bind(chave, dia, max).first();
+  return r ? r.dia : null;
+}
+// Devolve a vaga no dia em que ela foi reservada. Se o contador já virou pro
+// dia seguinte, não mexe em nada: a vaga era do dia que acabou.
+function devolver(env, chave, dia) {
+  return env.DB.prepare(
+    "UPDATE limites SET n = n - 1 WHERE chave = ? AND dia = ? AND n > 0"
+  ).bind(chave, dia).run();
+}
+
+function hashCodigo(env, email, codigo) { return hmac(env.CODIGO_SEGREDO, "codigo:" + email + ":" + codigo); }
+
+// Resend falso pros testes locais: só com as travas do modo de teste e só em localhost.
+function urlResendTeste(env) {
+  const u = env.RESEND_URL_TESTE || "";
+  return /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(u) ? u : null;
+}
+
+// Manda o código. Devolve "ok", "recusado" (o Resend respondeu que não mandou)
+// ou "incerto" (estourou o tempo ou caiu a conexão: pode ter saído ou não).
+async function enviarCodigo(env, email, codigo, endereco) {
+  let resp;
+  try {
+    resp = await fetch(endereco, {
+      signal: AbortSignal.timeout(RESEND_TEMPO_MS),
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: env.EMAIL_REMETENTE,
+        to: [email],
+        subject: `${codigo} é o seu código da Estrutura da Escuta`,
+        text: `Seu código para entrar na rede da Estrutura da Escuta: ${codigo}\n\n` +
+          `Ele vale por ${CODIGO_MINUTOS} minutos e só funciona uma vez.\n` +
+          `Se não foi você que pediu, pode ignorar este e-mail.`,
+      }),
+    });
+  } catch (e) {
+    // Nunca registra o código: só o tipo do erro.
+    console.error("resend", e && e.name);
+    return "incerto";
+  }
+  if (!resp.ok) {
+    console.error("resend", resp.status);
+    // 5xx do lado deles também pode ter saído; só 4xx é recusa certa.
+    return resp.status >= 400 && resp.status < 500 ? "recusado" : "incerto";
+  }
+  return "ok";
 }
 
 function itemPublico(i) {

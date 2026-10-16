@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Minha área · Estrutura da Escuta</title>
-<meta name="description" content="Área de quem fez o desafio Estrutura da Escuta.">
+<meta name="description" content="Área das profissionais da rede Estrutura da Escuta.">
 <meta property="og:title" content="Minha área">
-<meta property="og:description" content="Área de quem fez o desafio Estrutura da Escuta.">
+<meta property="og:description" content="Área das profissionais da rede Estrutura da Escuta.">
 <meta property="og:image" content="/img/sala-arco.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,12 +29,24 @@
   <section id="tela-entrar" class="entrada-area" hidden>
     <div class="lado-texto">
       <p class="marca-grande">Estrutura da Escuta<small>Sua área</small></p>
-      <h1>O seu <em>percurso</em> continua aqui.</h1>
-      <p>Entre com o mesmo e-mail e senha que você usou no desafio. Aqui ficam o que apareceu em cada dia, os encontros da comunidade e o seu perfil na rede de profissionais.</p>
+      <h1>A sua <em>área</em> na rede.</h1>
+      <p>Profissionais da área perinatal e parental entram com um código enviado por e-mail e montam o perfil na rede. Quem fez o desafio também pode entrar com a senha dele e ver o percurso e os encontros da comunidade.</p>
     </div>
     <div class="lado-form">
       <div>
-        <h2>Entrar</h2>
+        <h2>Entrar com código por e-mail</h2>
+        <form id="form-codigo" novalidate>
+          <label class="campo">E-mail<input type="email" id="k-email" autocomplete="email" required></label>
+          <div id="k-passo2" hidden>
+            <label class="campo">Código de 6 números<input type="text" id="k-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+            <p class="ajuda" id="k-enviado"></p>
+          </div>
+          <p class="aviso-erro" id="k-erro" role="alert" hidden></p>
+          <button class="enviar" type="submit" id="k-botao">Receber código</button>
+          <p class="ajuda" id="k-outro" hidden><button type="button" class="link-sair" id="k-reenviar">Pedir outro código</button></p>
+        </form>
+
+        <h2 class="entrar-ou">Fez o desafio? Entre com a senha dele</h2>
         <form id="form-entrar" novalidate>
           <label class="campo">E-mail<input type="email" id="e-email" autocomplete="email" required></label>
           <label class="campo">Senha<input type="password" id="e-senha" autocomplete="current-password" required></label>
@@ -53,13 +65,15 @@
         <div class="conteudo">
           <p class="rotulo">Minha área</p>
           <h1 id="ola"></h1>
-          <p>Aqui ficam o seu resultado do desafio, os encontros da comunidade e o seu perfil na rede.</p>
+          <p id="area-intro">Aqui ficam o seu resultado do desafio, os encontros da comunidade e o seu perfil na rede.</p>
           <button type="button" class="link-sair" id="sair">Sair</button>
         </div>
       </div>
     </section>
 
-    <section class="secao gutter" aria-labelledby="t-desafio">
+    <p class="aviso-codigo gutter" id="aviso-codigo" hidden>Participou do desafio? Saia e entre pela senha do desafio para consultar seu percurso e os avisos da comunidade.</p>
+
+    <section class="secao gutter" aria-labelledby="t-desafio" id="secao-desafio">
       <div class="miolo">
         <p class="tag-sala"><span class="num">i.</span><span class="rotulo">Meu desafio</span></p>
         <div class="cabeca-secao">
@@ -72,7 +86,7 @@
       </div>
     </section>
 
-    <section class="secao faixa-vinho gutter" aria-labelledby="t-acoes">
+    <section class="secao faixa-vinho gutter" aria-labelledby="t-acoes" id="secao-acoes">
       <div class="miolo">
         <p class="tag-sala"><span class="num">ii.</span><span class="rotulo">Da comunidade</span></p>
         <div class="cabeca-secao"><h2 id="t-acoes">Encontros e <em>avisos</em> só pra vocês.</h2></div>
@@ -82,7 +96,7 @@
 
     <section class="secao gutter" aria-labelledby="t-perfil" id="perfil">
       <div class="miolo">
-        <p class="tag-sala"><span class="num">iii.</span><span class="rotulo">Meu perfil na rede</span></p>
+        <p class="tag-sala"><span class="num" id="num-perfil">iii.</span><span class="rotulo">Meu perfil na rede</span></p>
         <div class="cabeca-secao">
           <div><h2 id="t-perfil">Apareça pra quem <em>procura</em>.</h2><p class="intro" id="perfil-estado"></p></div>
           <a class="ver-tudo" href="/rede#busca" id="ver-busca" hidden>Ver na busca</a>

@@ -75,3 +75,25 @@ CREATE TABLE IF NOT EXISTS sessoes_rede (
   expira TEXT NOT NULL,
   desafio_token TEXT
 );
+-- desafio_token vazio = sessão aberta por código de e-mail: só a rede, nada do desafio.
+
+-- Códigos de entrada por e-mail (qualquer profissional, sem o desafio).
+-- Um código vivo por e-mail; guarda só o hash. Some ao usar, ao errar 5 vezes
+-- ou quando ela pede outro.
+CREATE TABLE IF NOT EXISTS codigos_rede (
+  email TEXT PRIMARY KEY,
+  hash TEXT NOT NULL,
+  expira TEXT NOT NULL,
+  tentativas INTEGER NOT NULL DEFAULT 0,
+  criado_em TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+-- Contadores do dia (fuso de SP) da entrada por código: envios no total, envios
+-- por destinatário e erros por e-mail. Cada pedido reserva a sua vaga num único
+-- comando (soma e lê o total juntos), então pedidos simultâneos não furam o teto.
+-- Chaves de e-mail entram como hash, nunca em texto.
+CREATE TABLE IF NOT EXISTS limites (
+  chave TEXT PRIMARY KEY,
+  dia TEXT NOT NULL,
+  n INTEGER NOT NULL
+);

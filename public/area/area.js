@@ -37,7 +37,21 @@
 
   function carregar() {
     return Promise.all([api("GET", "/api/area"), api("GET", "/api/rede/eu")])
-      .then(function (r) { desenharArea(r[0]); desenharPerfil(r[1]); mostrar("area"); })
+      .then(function (r) {
+        // Quem entrou por código não recebe nada do desafio (o servidor já corta);
+        // aqui só some com as seções vazias.
+        var porCodigo = r[0].modo === "codigo";
+        $("secao-desafio").hidden = porCodigo;
+        $("secao-acoes").hidden = porCodigo;
+        $("aviso-codigo").hidden = !porCodigo;
+        $("num-perfil").textContent = porCodigo ? "i." : "iii.";
+        $("area-intro").textContent = porCodigo
+          ? "Aqui fica o seu perfil na rede de profissionais."
+          : "Aqui ficam o seu resultado do desafio, os encontros da comunidade e o seu perfil na rede.";
+        if (porCodigo) desenharOla(r[0].nome); else desenharArea(r[0]);
+        desenharPerfil(r[1]);
+        mostrar("area");
+      })
       .catch(function (e) {
         if (e.status === 401) {
           if (e.message.indexOf("outro lugar") >= 0) { $("e-erro").textContent = e.message; $("e-erro").hidden = false; }
@@ -59,14 +73,54 @@
   });
   $("sair").addEventListener("click", function () { api("POST", "/api/rede/sair", {}).then(function () { mostrar("entrar"); }); });
 
+  // ───── entrar com código por e-mail ─────
+  var kPasso = 1;
+  function kErro(msg) { $("k-erro").textContent = msg; $("k-erro").hidden = !msg; }
+  function pedirCodigo() {
+    var botao = $("k-botao");
+    kErro("");
+    botao.disabled = true; botao.textContent = "Enviando…";
+    return api("POST", "/api/rede/codigo", { email: $("k-email").value.trim() })
+      .then(function (d) {
+        kPasso = 2;
+        $("k-passo2").hidden = false; $("k-outro").hidden = false;
+        $("k-email").readOnly = true;
+        // Só no teste local o servidor devolve o código (nunca no portal publicado).
+        $("k-enviado").textContent = d.codigo_dev
+          ? "Teste local: o código é " + d.codigo_dev + "."
+          : "Mandamos um código pro seu e-mail. Ele vale por 10 minutos. Confira também o spam.";
+        $("k-codigo").value = ""; $("k-codigo").focus();
+      })
+      .catch(function (e) { kErro(e.message); })
+      .then(function () { botao.disabled = false; botao.textContent = kPasso === 2 ? "Entrar" : "Receber código"; });
+  }
+  $("form-codigo").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (kPasso === 1) { pedirCodigo(); return; }
+    var botao = $("k-botao");
+    kErro("");
+    botao.disabled = true; botao.textContent = "Entrando…";
+    api("POST", "/api/rede/codigo/entrar", { email: $("k-email").value.trim(), codigo: $("k-codigo").value.trim() })
+      .then(function () {
+        kPasso = 1; $("k-passo2").hidden = true; $("k-outro").hidden = true; $("k-email").readOnly = false;
+        return carregar();
+      })
+      .catch(function (e) { kErro(e.message); })
+      .then(function () { botao.disabled = false; botao.textContent = kPasso === 2 ? "Entrar" : "Receber código"; });
+  });
+  $("k-reenviar").addEventListener("click", pedirCodigo);
+
   // ───── desafio e comunidade ─────
-  function desenharArea(a) {
-    var primeiro = (a.nome || "").split(" ")[0];
+  function desenharOla(nome) {
+    var primeiro = (nome || "").split(" ")[0];
     var ola = $("ola");
     ola.textContent = "";
     ola.appendChild(document.createTextNode("Olá, "));
     ola.appendChild(el("em", { texto: primeiro || "você" }));
     ola.appendChild(document.createTextNode("."));
+  }
+  function desenharArea(a) {
+    desenharOla(a.nome);
 
     var d = a.desafio;
     $("progresso").textContent = d.concluidos === d.total
